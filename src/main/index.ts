@@ -1,7 +1,10 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+
+import { uIOhook, UiohookKey } from 'uiohook-napi'
+import { EventManager } from './events'
 
 function createWindow(): void {
   // Create the browser window.
@@ -10,6 +13,11 @@ function createWindow(): void {
     height: 670,
     show: false,
     autoHideMenuBar: true,
+    alwaysOnTop: true,
+    frame: false,
+    transparent: true,
+    roundedCorners: false,
+
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -28,6 +36,8 @@ function createWindow(): void {
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
+  console.log('is.dev', is.dev)
+  console.log('process.env.ELECTRON_RENDERER_URL', process.env['ELECTRON_RENDERER_URL'])
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
@@ -50,9 +60,34 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  // ipcMain.on('ping', () => {
+  //   uIOhook.start()
+  //   console.log('pong')
+  // })
+
+  // https://chat.deepseek.com/a/chat/s/4ebd9549-078c-4421-b902-53bafe5cc89e
+
+  // https://chat.deepseek.com/a/chat/s/2ccc9605-37ac-494c-bc9d-fc2bf69d9be2
+
+  // https://grok.com/chat/c20754e2-fdc8-44f4-8d85-05655a4ee4e3
+
+  new EventManager()
 
   createWindow()
+
+  uIOhook.on('keydown', (e) => {
+    if (e.keycode === UiohookKey.Q) {
+      console.log('Hello!')
+    }
+
+    if (e.keycode === UiohookKey.Escape) {
+      process.exit(0)
+    }
+  })
+
+  uIOhook.on('mousedown', (e) => {
+    console.log(JSON.stringify(e))
+  })
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

@@ -5,7 +5,7 @@ function App(): React.JSX.Element {
   const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
 
   return (
-    <>
+    <div className=" w-[400px]">
       <img alt="logo" className="logo" src={electronLogo} />
       <div className="creator">Powered by electron-vite</div>
       <div className="text">
@@ -26,9 +26,20 @@ function App(): React.JSX.Element {
             Send IPC
           </a>
         </div>
+        <div className="action">
+          <a
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => {
+              window.electron.ipcRenderer.send('getCaptureSourcesByWindow')
+            }}
+          >
+            Get Capture Sources By Window
+          </a>
+        </div>
       </div>
       <Versions></Versions>
-    </>
+    </div>
   )
 }
 

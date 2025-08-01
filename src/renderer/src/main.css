@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.app-drag {
+  app-region: drag;
+  user-select: none;
+}
+
+.app-drag-none {
+  app-region: no-drag;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
