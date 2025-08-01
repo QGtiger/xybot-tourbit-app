@@ -43,14 +43,14 @@ export async function uploadFile(config: {
 export function hanleEventByRenderer<T extends ChannelName>(
   channel: T,
   listener: (
-    ev: Electron.IpcMainEvent & {
-      data: ChannelData<T>
+    ev: Electron.IpcMainInvokeEvent & {
+      data: ChannelInvokeData<T>
     }
-  ) => void
+  ) => ChannelHandleData<T>
 ): void {
-  ipcMain.on(channel, (event, arg) => {
-    console.log(`Received IPC event: ${channel}`, arg)
-    listener({
+  ipcMain.handle(channel, (event, arg) => {
+    console.log(`Received IPC event by Invoke: ${channel}`, arg)
+    return listener({
       ...event,
       data: arg
     })

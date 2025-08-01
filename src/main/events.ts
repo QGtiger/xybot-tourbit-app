@@ -7,17 +7,36 @@ export class EventManager {
   }
 
   initEvents() {
-    hanleEventByRenderer('ping', () => {
+    hanleEventByRenderer('ping', async () => {
       console.log('pong')
     })
 
-    hanleEventByRenderer('winSetSize', (event) => {
+    hanleEventByRenderer('winSetSize', async (event) => {
       const { width, height } = event.data
       const { sender } = event
       const mainWindow = BrowserWindow.fromId(sender.id)
       if (mainWindow) {
         mainWindow.setSize(width, height)
       }
+    })
+
+    hanleEventByRenderer('queryScreenList', async () => {
+      return Promise.all([
+        desktopCapturer.getSources({
+          types: ['screen'],
+          fetchWindowIcons: true
+        }),
+        screen.getAllDisplays()
+      ]).then(([sources, displays]) => {
+        return sources.map((source, index) => {
+          return {
+            id: source.id || displays[index].id.toString(),
+            name: displays[index].label || source.name,
+            thumbnail: source.thumbnail.toDataURL(),
+            display: displays[index]
+          }
+        })
+      })
     })
 
     ipcMain.on('getCaptureSourcesByWindow', async () => {

@@ -9,14 +9,13 @@ import { EventManager } from './events'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 0,
+    height: 0,
     show: false,
     autoHideMenuBar: true,
     alwaysOnTop: true,
     frame: false,
     transparent: true,
-    roundedCorners: false,
 
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -36,8 +35,6 @@ function createWindow(): void {
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
-  console.log('is.dev', is.dev)
-  console.log('process.env.ELECTRON_RENDERER_URL', process.env['ELECTRON_RENDERER_URL'])
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
