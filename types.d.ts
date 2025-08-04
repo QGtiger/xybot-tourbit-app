@@ -7,15 +7,17 @@ type ChannelInvokeMap = {
   queryScreenList: void
 }
 
+type CaptureSource = {
+  id: string
+  name: string
+  thumbnail: string
+  display: Electron.Display
+}
+
 type ChannelHandlelMap = {
   ping: void
   winSetSize: void
-  queryScreenList: {
-    id: string
-    name: string
-    thumbnail: string
-    display: Electron.Display
-  }[]
+  queryScreenList: CaptureSource[]
 }
 
 type ChannelName = keyof ChannelInvokeMap

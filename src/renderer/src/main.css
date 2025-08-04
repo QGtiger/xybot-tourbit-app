@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .interactive {
+    cursor: pointer;
+    app-region: no-drag;
+  }
+}
+
 .app-drag {
   app-region: drag;
   user-select: none;
@@ -34,4 +41,9 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100vh;
+  overflow: hidden;
 }
