@@ -8,8 +8,8 @@ import { EventManager } from './events'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 0,
-    height: 0,
+    width: 300,
+    height: 300,
     show: false,
     autoHideMenuBar: true,
     alwaysOnTop: true,
