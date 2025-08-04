@@ -7,6 +7,7 @@ type ChannelInvokeMap = {
   queryScreenList: void
   startCollectClickEvents: {
     sourceId: string
+    devicePixelRatio: number
   }
   stopCollectClickEvents: void
 }

@@ -10,14 +10,17 @@ export class EventManager {
   startTime: number = Date.now()
   contentClickData: ClickDataWithShotType[] = []
 
+  devicePixelRatio: number = 1
+
   constructor() {
     this.initEvents()
   }
 
-  initStartCapture(sourceId: string): void {
+  initStartCapture(sourceId: string, ratio): void {
     this.captureSourceId = sourceId
     this.startTime = Date.now()
     this.contentClickData.length = 0
+    this.devicePixelRatio = ratio
     uIOhook.start()
   }
 
@@ -27,8 +30,10 @@ export class EventManager {
       const captureDisplay = this.sourceDisplayMap.get(this.captureSourceId)
       if (!captureDisplay) return
       const {
-        bounds: { x: displayX, y: displayY, width: displayWidth, height: displayHeight }
+        bounds: { x: displayX, y: displayY, width, height }
       } = captureDisplay
+      const displayWidth = width * this.devicePixelRatio
+      const displayHeight = height * this.devicePixelRatio
 
       const { x, y } = e
 
@@ -45,8 +50,8 @@ export class EventManager {
       const clickDataWithShot: ClickDataWithShotType = {
         x: x - displayX,
         y: y - displayY,
-        w: displayWidth,
-        h: displayHeight,
+        w: width,
+        h: height,
         screenshotUrl: '',
         t: Date.now() - this.startTime
       }
@@ -104,8 +109,8 @@ export class EventManager {
     })
 
     hanleEventByRenderer('startCollectClickEvents', async (event) => {
-      const { sourceId } = event.data
-      this.initStartCapture(sourceId)
+      const { sourceId, devicePixelRatio } = event.data
+      this.initStartCapture(sourceId, devicePixelRatio)
       return {
         success: true
       }

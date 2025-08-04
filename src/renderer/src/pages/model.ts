@@ -56,9 +56,6 @@ export const TourbitAppModel = createCustomModel(() => {
   }
 
   const handleStartCapture = async () => {
-    await sendToMainByIPC('startCollectClickEvents', {
-      sourceId: targetCaptureSource?.id || ''
-    })
     nav('/recording')
 
     recordedChunks.length = 0 // 清空之前的录制数据
@@ -71,6 +68,7 @@ export const TourbitAppModel = createCustomModel(() => {
     const captureWidth = display.bounds.width * window.devicePixelRatio
 
     const captureHeight = display.bounds.height * window.devicePixelRatio
+
     navigator.mediaDevices
       .getUserMedia({
         video: {
@@ -78,18 +76,25 @@ export const TourbitAppModel = createCustomModel(() => {
           mandatory: {
             chromeMediaSource: 'desktop',
             chromeMediaSourceId: id,
-            width: captureWidth,
-            height: captureHeight,
-            maxFrameRate: 60
+            maxFrameRate: 60,
+            aspectRatio: captureWidth / captureHeight,
+            minWidth: captureWidth,
+            minHeight: captureHeight,
+            maxWidth: captureWidth,
+            maxHeight: captureHeight
           }
         }
       })
       .then((stream) => {
         if (!stream.active) throw new Error('Inactive stream')
+        sendToMainByIPC('startCollectClickEvents', {
+          sourceId: targetCaptureSource?.id || '',
+          devicePixelRatio: window.devicePixelRatio
+        })
 
         const recorder = (viewModel.mediaRecorder = new MediaRecorder(stream, {
           mimeType,
-          videoBitsPerSecond: 8000000
+          videoBitsPerSecond: 25000000
         }))
 
         // 事件监听
