@@ -1,24 +1,20 @@
 import { sendToMainByIPC } from '@renderer/utils'
-import { useInterval, useReactive, useRequest } from 'ahooks'
-import { App, Button } from 'antd'
+import { useInterval, useRequest } from 'ahooks'
+import { Button } from 'antd'
 import classNames from 'classnames'
 import { ChevronDown, Command, MonitorPlay, X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { TourbitAppModel } from './model'
 
 export default function Index() {
-  const { message } = App.useApp()
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const { handleCountDown } = TourbitAppModel.useModel()
-
-  const viewModel = useReactive({
-    source: 'screen' as '' | 'window' | 'screen',
-    targetCaptureSource: null as CaptureSource | null,
-
-    status: 'idle' as 'idle' | 'recording' | 'paused'
-  })
-
-  const { source, targetCaptureSource, status } = viewModel
+  const {
+    handleSelectCaptueSource,
+    handleCountDown,
+    source,
+    targetCaptureSource,
+    isUploading,
+    handlerSwitchSource
+  } = TourbitAppModel.useModel()
 
   const { data: screenList, runAsync } = useRequest(
     async () => {
@@ -26,6 +22,7 @@ export default function Index() {
       if (source === 'screen') {
         return sendToMainByIPC('queryScreenList')
       }
+      return []
     },
     {
       manual: true
@@ -39,61 +36,6 @@ export default function Index() {
   useEffect(() => {
     runAsync()
   }, [source])
-
-  const isRecording = status === 'recording'
-
-  const startCapture = async () => {
-    if (!videoRef.current || !targetCaptureSource) {
-      message.error('请先选择一个录制屏幕。')
-      // new Notification('请先选择一个录制屏幕。', {
-      //   body: '请在列表中选择一个屏幕进行录制。'
-      // })
-      return
-    }
-
-    return handleCountDown()
-
-    // console.log('startCapture', targetCaptureSource)
-    // navigator.mediaDevices
-    //   .getUserMedia({
-    //     video: {
-    //       // @ts-expect-error 类型错误
-    //       mandatory: {
-    //         chromeMediaSource: 'desktop',
-    //         chromeMediaSourceId: targetCaptureSource.id,
-    //         width: targetCaptureSource.display.bounds.width,
-    //         height: targetCaptureSource.display.bounds.height
-    //       }
-    //     }
-    //   })
-    //   .then((stream) => {
-    //     videoRef.current!.srcObject = stream
-    //     videoRef.current!.play()
-    //     viewModel.status = 'recording'
-    //   })
-    //   .catch((err) => {
-    //     console.error('Error accessing media devices.', err)
-    //   })
-  }
-
-  const stopCapture = () => {
-    if (videoRef.current) {
-      const stream = videoRef.current.srcObject as MediaStream
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop())
-      }
-      videoRef.current.srcObject = null
-    }
-    viewModel.status = 'idle'
-  }
-
-  const handlerSwitchSource = (newSource: 'window' | 'screen') => {
-    let _source: any = newSource
-    if (newSource === source) {
-      _source = ''
-    }
-    viewModel.source = _source
-  }
 
   return (
     <div className="overflow-hidden">
@@ -134,7 +76,7 @@ export default function Index() {
                 return (
                   <div
                     onClick={() => {
-                      viewModel.targetCaptureSource = it
+                      handleSelectCaptueSource(it)
                     }}
                     className={classNames('app-drag-none flex flex-col gap-1 rounded-md group')}
                     key={it.id}
@@ -178,44 +120,16 @@ export default function Index() {
           block
           className="mt-2 app-drag-none flex items-center font-semibold py-5"
           onClick={() => {
-            if (!isRecording) {
-              startCapture()
-            } else {
-              stopCapture()
-            }
+            if (isUploading) return
+            handleCountDown()
           }}
+          loading={isUploading}
         >
-          <span>{!isRecording ? 'Start Recording' : 'Stop Recording'}</span>
+          <span>{isUploading ? 'Preparing upload...' : 'Start Recording'}</span>
           <span className="px-2  py-0.5 text-xs rounded-md bg-[#7d88f0] flex gap-0.5 items-center">
             <Command size={10} strokeWidth={3} />E
           </span>
         </Button>
-        {/* <div className="mt-2 app-drag-none">
-          <Button size="large" type="primary" block className="flex items-center font-semibold">
-            <span>Stop Recording</span>
-            <span className="px-2  py-0.5 text-xs rounded-md bg-[#7d88f0] flex gap-0.5 items-center">
-              <MonitorStop size={10} strokeWidth={3} />E
-            </span>
-          </Button>
-        </div> */}
-
-        {/* {viewModel.status === 'recording' && (
-          <div className="mt-2 app-drag-none">
-            <Button size="large" type="primary" block className="flex items-center font-semibold">
-              <span>Pause Recording</span>
-              <span className="px-2  py-0.5 text-xs rounded-md bg-[#7d88f0] flex gap-0.5 items-center">
-                <MonitorStop size={10} strokeWidth={3} />E
-              </span>
-            </Button>
-          </div>
-        )} */}
-
-        <video
-          className={classNames({
-            ' hidden': viewModel.status !== 'recording'
-          })}
-          ref={videoRef}
-        ></video>
       </div>
       <div className="mt-4 text-xs text-gray-300">Powered by electron-vite</div>
       <div className="text-xs text-gray-300">Version: 1.0.0</div>
