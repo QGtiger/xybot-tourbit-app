@@ -17,16 +17,16 @@ export default function Layout() {
         }
       }}
     >
-      <TourbitAppModel.Provider>
-        <App>
+      <App>
+        <TourbitAppModel.Provider>
           <div
             className=" w-[300px] app-drag   overflow-hidden bg-[#7e7d77]  p-4 text-white"
             ref={pageRef}
           >
             {outlet}
           </div>
-        </App>
-      </TourbitAppModel.Provider>
+        </TourbitAppModel.Provider>
+      </App>
     </ConfigProvider>
   )
 }

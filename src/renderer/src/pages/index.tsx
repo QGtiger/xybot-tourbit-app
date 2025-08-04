@@ -131,8 +131,7 @@ export default function Index() {
           </span>
         </Button>
       </div>
-      <div className="mt-4 text-xs text-gray-300">Powered by electron-vite</div>
-      <div className="text-xs text-gray-300">Version: 1.0.0</div>
+      <div className="text-xs text-gray-300 mt-4">Version: 1.0.0</div>
       <div className="text-xs text-gray-300">Author: Lightfish</div>
     </div>
   )

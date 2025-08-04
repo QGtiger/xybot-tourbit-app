@@ -1,5 +1,5 @@
 import { createCustomModel } from '@renderer/common/createModel'
-import { uploadFile } from '@renderer/utils'
+import { dataURLtoBlob, sendToMainByIPC, uploadFile } from '@renderer/utils'
 import { useReactive } from 'ahooks'
 import { App } from 'antd'
 import { useNavigate } from 'react-router-dom'
@@ -31,18 +31,20 @@ export const TourbitAppModel = createCustomModel(() => {
     recordedChunks: [] as Blob[],
 
     source: 'screen' as '' | 'window' | 'screen',
-    isUploading: false
+    status: 'idle' as 'idle' | 'preparing' | 'recording' | 'uploading'
   })
 
-  const { targetCaptureSource, mediaRecorder, recordedChunks, source } = viewModel
+  const { targetCaptureSource, mediaRecorder, recordedChunks, source, status } = viewModel
+  const isUploading = status === 'uploading'
 
-  const handleClose = () => {
+  const handleClose = async () => {
     nav('/')
 
     mediaRecorder?.stop()
+    await sendToMainByIPC('stopCollectClickEvents')
   }
 
-  const handleCountDown = () => {
+  const handleCountDown = async () => {
     if (!targetCaptureSource) {
       message.error('请先选择一个录制屏幕。')
       // new Notification('请先选择一个录制屏幕。', {
@@ -53,7 +55,10 @@ export const TourbitAppModel = createCustomModel(() => {
     nav('/countdown')
   }
 
-  const handleStartCapture = () => {
+  const handleStartCapture = async () => {
+    await sendToMainByIPC('startCollectClickEvents', {
+      sourceId: targetCaptureSource?.id || ''
+    })
     nav('/recording')
 
     recordedChunks.length = 0 // 清空之前的录制数据
@@ -112,30 +117,68 @@ export const TourbitAppModel = createCustomModel(() => {
       })
   }
 
-  const handleStopCapture = () => {
+  const handleStopCapture = async () => {
     nav('/')
 
     if (mediaRecorder) {
-      viewModel.isUploading = true
-      mediaRecorder.addEventListener('stop', async () => {
-        try {
-          console.log(recordedChunks.length, 'recordedChunks', recordedChunks)
-          const blob = new Blob(recordedChunks, { type: mimeType })
-          const url = await uploadFile({
-            blob,
-            name: 'recording.webm'
+      viewModel.status = 'uploading'
+      const recordSchema: RecordScreenProps = {
+        screenRecordingUrl: '',
+        screenRecordWidth: targetCaptureSource?.display.bounds.width || 0,
+        screenRecordHeight: targetCaptureSource?.display.bounds.height || 0,
+        clicks: []
+      }
+
+      Promise.all([
+        new Promise<any>(async (r, j) => {
+          const { success, data: clickShots } = await sendToMainByIPC('stopCollectClickEvents')
+          if (!success) {
+            j('停止录制失败，请重试。')
+          } else {
+            Promise.all(
+              clickShots.map(async (shot, index) => {
+                const blob = dataURLtoBlob(shot.screenshotUrl)
+                const name = `app__clicks_${shot.t}.jpg`
+                const url = await uploadFile({
+                  blob,
+                  name
+                })
+                recordSchema.clicks[index] = {
+                  ...shot,
+                  screenshotUrl: url
+                }
+              })
+            ).then(r, j)
+          }
+        }),
+        new Promise<void>(async (r) => {
+          mediaRecorder.addEventListener('stop', async () => {
+            const blob = new Blob(recordedChunks, { type: mimeType })
+            const url = await uploadFile({
+              blob,
+              name: `app__record_${Date.now()}.webm`
+            })
+            recordSchema.screenRecordingUrl = url
+            console.log('录制完成，文件已上传', url)
+            r()
           })
-          console.log(url, '录制完成，文件已上传')
-        } catch (error) {
-          console.error('Error uploading file:', error)
-        }
 
-        viewModel.isUploading = false
-      })
-
-      // 触发ondataavailable， 否则没数据
-      mediaRecorder.stop()
-      viewModel.mediaRecorder = null // 清除引用
+          // 触发ondataavailable， 否则没数据
+          mediaRecorder.stop()
+        })
+      ])
+        .then(
+          () => {
+            console.log('录制完成，所有数据已上传', recordSchema)
+          },
+          (err) => {
+            message.error(`录制失败: ${err}`)
+          }
+        )
+        .finally(() => {
+          viewModel.mediaRecorder = null // 清除引用
+          viewModel.status = 'idle'
+        })
     }
   }
 
@@ -158,6 +201,7 @@ export const TourbitAppModel = createCustomModel(() => {
     handleStopCapture,
     handlerSwitchSource,
     handleSelectCaptueSource,
-    ...viewModel
+    ...viewModel,
+    isUploading
   }
 })

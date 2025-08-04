@@ -3,7 +3,6 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-import { uIOhook, UiohookKey } from 'uiohook-napi'
 import { EventManager } from './events'
 
 function createWindow(): void {
@@ -16,6 +15,7 @@ function createWindow(): void {
     alwaysOnTop: true,
     frame: false,
     transparent: true,
+    resizable: false,
 
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -71,20 +71,6 @@ app.whenReady().then(() => {
   new EventManager()
 
   createWindow()
-
-  uIOhook.on('keydown', (e) => {
-    if (e.keycode === UiohookKey.Q) {
-      console.log('Hello!')
-    }
-
-    if (e.keycode === UiohookKey.Escape) {
-      process.exit(0)
-    }
-  })
-
-  uIOhook.on('mousedown', (e) => {
-    console.log(JSON.stringify(e))
-  })
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

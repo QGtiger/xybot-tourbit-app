@@ -1,12 +1,72 @@
 import { desktopCapturer, ipcMain, screen, BrowserWindow } from 'electron'
 import { dataURLtoBlob, hanleEventByRenderer, uploadFile } from './utils'
 
+import { uIOhook } from 'uiohook-napi'
+
 export class EventManager {
+  sourceDisplayMap: Map<string, Electron.Display> = new Map()
+  desktopCapturerSourceMap: Map<string, Electron.DesktopCapturerSource> = new Map()
+  captureSourceId: string | null = null
+  startTime: number = Date.now()
+  contentClickData: ClickDataWithShotType[] = []
+
   constructor() {
     this.initEvents()
   }
 
+  initStartCapture(sourceId: string): void {
+    this.captureSourceId = sourceId
+    this.startTime = Date.now()
+    this.contentClickData.length = 0
+    uIOhook.start()
+  }
+
   initEvents() {
+    uIOhook.on('mousedown', async (e) => {
+      if (!this.captureSourceId) return
+      const captureDisplay = this.sourceDisplayMap.get(this.captureSourceId)
+      if (!captureDisplay) return
+      const {
+        bounds: { x: displayX, y: displayY, width: displayWidth, height: displayHeight }
+      } = captureDisplay
+
+      const { x, y } = e
+
+      // 如果不是对应 屏幕的点击事件，则忽略
+      if (
+        x < displayX ||
+        x > displayX + displayWidth ||
+        y < displayY ||
+        y > displayY + displayHeight
+      ) {
+        return
+      }
+
+      const clickDataWithShot: ClickDataWithShotType = {
+        x: x - displayX,
+        y: y - displayY,
+        w: displayWidth,
+        h: displayHeight,
+        screenshotUrl: '',
+        t: Date.now() - this.startTime
+      }
+
+      const sources = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: displayWidth, height: displayHeight },
+        fetchWindowIcons: true
+      })
+
+      const targetSource = sources.find((source) => source.id === this.captureSourceId)
+      if (!targetSource) return
+
+      const screenshotUrl = targetSource.thumbnail.toDataURL()
+
+      clickDataWithShot.screenshotUrl = screenshotUrl
+
+      this.contentClickData.push(clickDataWithShot)
+    })
+
     hanleEventByRenderer('ping', async () => {
       console.log('pong')
     })
@@ -17,6 +77,7 @@ export class EventManager {
       const mainWindow = BrowserWindow.fromId(sender.id)
       if (mainWindow) {
         mainWindow.setSize(width, height)
+        mainWindow.setResizable(false)
       }
     })
 
@@ -29,6 +90,9 @@ export class EventManager {
         screen.getAllDisplays()
       ]).then(([sources, displays]) => {
         return sources.map((source, index) => {
+          this.sourceDisplayMap.set(source.id, displays[index])
+
+          this.desktopCapturerSourceMap.set(source.id, source)
           return {
             id: source.id || displays[index].id.toString(),
             name: displays[index].label || source.name,
@@ -37,6 +101,22 @@ export class EventManager {
           }
         })
       })
+    })
+
+    hanleEventByRenderer('startCollectClickEvents', async (event) => {
+      const { sourceId } = event.data
+      this.initStartCapture(sourceId)
+      return {
+        success: true
+      }
+    })
+
+    hanleEventByRenderer('stopCollectClickEvents', async () => {
+      uIOhook.stop()
+      return {
+        success: true,
+        data: this.contentClickData
+      }
     })
 
     ipcMain.on('getCaptureSourcesByWindow', async () => {
