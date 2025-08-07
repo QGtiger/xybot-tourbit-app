@@ -1,4 +1,4 @@
-import { desktopCapturer, ipcMain, screen, BrowserWindow } from 'electron'
+import { desktopCapturer, ipcMain, screen, BrowserWindow, app } from 'electron'
 import { dataURLtoBlob, hanleEventByRenderer, uploadFile } from './utils'
 
 import { uIOhook } from 'uiohook-napi'
@@ -111,6 +111,8 @@ export class EventManager {
     hanleEventByRenderer('startCollectClickEvents', async (event) => {
       const { sourceId, devicePixelRatio } = event.data
       this.initStartCapture(sourceId, devicePixelRatio)
+
+      app.dock?.setBadge('REC')
       return {
         success: true
       }
@@ -118,10 +120,18 @@ export class EventManager {
 
     hanleEventByRenderer('stopCollectClickEvents', async () => {
       uIOhook.stop()
+
+      app.dock?.setBadge('')
       return {
         success: true,
         data: this.contentClickData
       }
+    })
+
+    hanleEventByRenderer('winClose', async (e) => {
+      const { sender } = e
+      const mainWindow = BrowserWindow.fromId(sender.id)
+      mainWindow?.close()
     })
 
     ipcMain.on('getCaptureSourcesByWindow', async () => {

@@ -10,6 +10,8 @@ type ChannelInvokeMap = {
     devicePixelRatio: number
   }
   stopCollectClickEvents: void
+
+  winClose: void
 }
 
 type CaptureSource = {
@@ -30,6 +32,7 @@ type ChannelHandlelMap = {
     success: boolean
     data: ClickDataWithShotType[]
   }
+  winClose: void
 }
 
 type ChannelName = keyof ChannelInvokeMap

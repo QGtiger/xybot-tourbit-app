@@ -41,8 +41,13 @@ export default function Index() {
     <div className="overflow-hidden">
       <div className="flex flex-col gap-2">
         <div className="flex justify-between">
-          <div className="flex items-center justify-center">
-            <X className=" app-drag-none text-[10px] bg-[#5e5e60]  p-[5px] rounded-full cursor-pointer" />
+          <div className="flex items-center justify-center ">
+            <X
+              onClick={() => {
+                sendToMainByIPC('winClose')
+              }}
+              className=" app-drag-none text-[10px] bg-[#5e5e60]  p-[5px] rounded-full cursor-pointer"
+            />
           </div>
         </div>
 

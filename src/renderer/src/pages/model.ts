@@ -53,6 +53,8 @@ export const TourbitAppModel = createCustomModel(() => {
       return
     }
     nav('/countdown')
+    mediaRecorder?.stop()
+    await sendToMainByIPC('stopCollectClickEvents')
   }
 
   const handleStartCapture = async () => {

@@ -9,12 +9,10 @@ export default function useWindowResize(target: BasicTarget) {
   useEffect(() => {
     console.log('Layout size', size)
     if (size?.width && size?.height) {
-      setTimeout(() => {
-        sendToMainByIPC('winSetSize', {
-          width: size.width,
-          height: size.height
-        } as ChannelInvokeData<'winSetSize'>)
-      }, 0)
+      sendToMainByIPC('winSetSize', {
+        width: size.width,
+        height: size.height
+      } as ChannelInvokeData<'winSetSize'>)
     }
   }, [size, size?.width, size?.height])
 }
