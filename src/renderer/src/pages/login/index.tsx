@@ -8,8 +8,21 @@ export default function Login() {
   const [authFailed, authFailedAction] = useBoolean(false)
   const { userLogin } = UserModel.useModel()
   const [token, setToken] = useState('')
+
+  const authToken = (t: string) => {
+    const from = new URLSearchParams(window.location.search).get('from')
+    userLogin({
+      token: t,
+      redirectUrl: from || '/'
+    })
+  }
+
   useMount(() => {
     window.open('https://tourbit.yingdao.com/auth', '_blank', 'noopener,noreferrer')
+
+    window.electron.ipcRenderer.once('deep-link-token', (_, token) => {
+      authToken(token)
+    })
   })
 
   useTimeout(() => {
@@ -36,11 +49,7 @@ export default function Login() {
             type="primary"
             block
             onClick={() => {
-              const from = new URLSearchParams(window.location.search).get('from')
-              userLogin({
-                token: token.trim(),
-                redirectUrl: from || '/'
-              })
+              authToken(token.trim())
             }}
           >
             验证
