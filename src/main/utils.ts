@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, protocol } from 'electron'
 
 export function dataURLtoBlob(dataUrl: string): Blob {
   const arr = dataUrl.split(',')
@@ -12,6 +12,50 @@ export function dataURLtoBlob(dataUrl: string): Blob {
   }
 
   return new Blob([u8arr], { type: mime })
+}
+
+const protocolStr = 'tourbitwebauth'
+
+// 注册自定义协议
+export function setupDeepLink(windowIns: BrowserWindow | null = null) {
+  if (!windowIns) return
+  // 仅在 macOS 和 Linux 上需要
+  if (process.platform !== 'win32') {
+    app.setAsDefaultProtocolClient(protocolStr)
+  }
+
+  // 处理 macOS 的 open-url 事件
+  app.on('open-url', (event, url) => {
+    event.preventDefault()
+    handleDeepLink(url, windowIns)
+  })
+
+  // 处理 Windows 的协议调用
+  protocol.registerStringProtocol(protocolStr, (request) => {
+    handleDeepLink(request.url, windowIns)
+  })
+}
+
+// 处理深层链接
+export function handleDeepLink(urlString: string, windowIns: BrowserWindow) {
+  if (!windowIns) return
+
+  try {
+    const parsedUrl = new URL(urlString)
+    if (parsedUrl.pathname === '/auth') {
+      const token = parsedUrl.searchParams.get('token')
+      if (token) {
+        // 发送 token 到渲染进程
+        windowIns.webContents.send('deep-link-token', token)
+
+        // 激活窗口
+        if (windowIns.isMinimized()) windowIns.restore()
+        windowIns.focus()
+      }
+    }
+  } catch (e) {
+    console.error('处理深层链接时出错:', e)
+  }
 }
 
 export async function uploadFile(config: {

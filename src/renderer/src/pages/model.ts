@@ -1,3 +1,4 @@
+import { walkflowRequest } from '@renderer/api/walkflowApi'
 import { createCustomModel } from '@renderer/common/createModel'
 import { dataURLtoBlob, sendToMainByIPC, uploadFile } from '@renderer/utils'
 import { useReactive } from 'ahooks'
@@ -177,6 +178,18 @@ export const TourbitAppModel = createCustomModel(() => {
         .then(
           () => {
             console.log('录制完成，所有数据已上传', recordSchema)
+
+            return walkflowRequest<{
+              flowId: string
+            }>({
+              url: '/create',
+              method: 'POST',
+              data: {
+                schema: recordSchema
+              }
+            }).then(({ data }) => {
+              window.open(`https://tourbit.yingdao.com/flow/${data.flowId}`, '_blank')
+            })
           },
           (err) => {
             message.error(`录制失败: ${err}`)

@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 import { EventManager } from './events'
+import { setupDeepLink } from './utils'
 
 function createWindow(): void {
   // Create the browser window.
@@ -42,6 +43,8 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  setupDeepLink(mainWindow)
 }
 
 // This method will be called when Electron has finished
