@@ -42,7 +42,7 @@ export function handleDeepLink(urlString: string, windowIns: BrowserWindow) {
 
   try {
     const parsedUrl = new URL(urlString)
-    if (parsedUrl.pathname === '/auth') {
+    if (parsedUrl.hostname === 'auth') {
       const token = parsedUrl.searchParams.get('token')
       if (token) {
         // 发送 token 到渲染进程

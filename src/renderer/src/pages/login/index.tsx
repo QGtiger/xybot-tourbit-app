@@ -27,7 +27,7 @@ export default function Login() {
 
   useTimeout(() => {
     authFailedAction.setTrue()
-  }, 2000)
+  }, 5000)
 
   return (
     <div className="flex justify-center items-center py-6 flex-col gap-4">
