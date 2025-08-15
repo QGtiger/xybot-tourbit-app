@@ -14,7 +14,7 @@ export function dataURLtoBlob(dataUrl: string): Blob {
   return new Blob([u8arr], { type: mime })
 }
 
-const protocolStr = 'tourbitwebauth'
+export const protocolStr = 'tourbitwebauth'
 
 // 注册自定义协议
 export function setupDeepLink(windowIns: BrowserWindow | null = null) {
@@ -24,9 +24,11 @@ export function setupDeepLink(windowIns: BrowserWindow | null = null) {
     app.setAsDefaultProtocolClient(protocolStr)
   }
 
+  console.log('设置深层链接协议:', protocolStr)
   // 处理 macOS 的 open-url 事件
   app.on('open-url', (event, url) => {
     event.preventDefault()
+    console.log('Received deep link:', url)
     handleDeepLink(url, windowIns)
   })
 

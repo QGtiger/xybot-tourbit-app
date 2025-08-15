@@ -38,6 +38,7 @@
     "ref-napi": "^3.0.3",
     "ref-struct-napi": "^1.1.1",
     "resize-observer-polyfill": "^1.5.1",
+    "screenshot-desktop": "^1.15.1",
     "uiohook-napi": "^1.5.4"
   },
   "devDependencies": {
@@ -48,6 +49,7 @@
     "@types/node": "^22.16.5",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@types/screenshot-desktop": "^1.15.0",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.16",
     "electron": "^37.2.3",

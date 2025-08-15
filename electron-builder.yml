@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.tourbit.app
 productName: xybot-tourbit-app
 directories:
   buildResources: build
