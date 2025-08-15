@@ -3,7 +3,11 @@
 export function sendToMainByIPC<T extends ChannelName>(
   channel: T,
   data?: ChannelInvokeData<T>
-): ChannelHandleData<T> {
+): Promise<{
+  success: boolean
+  data: ChannelHandlelMap[T]
+  msg?: string
+}> {
   return window.electron.ipcRenderer.invoke(channel, data)
 }
 

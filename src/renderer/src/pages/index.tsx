@@ -21,7 +21,7 @@ export default function Index() {
     async () => {
       if (!source) return []
       if (source === 'screen') {
-        return sendToMainByIPC('queryScreenList')
+        return sendToMainByIPC('queryScreenList').then((r) => r.data || [])
       }
       return []
     },

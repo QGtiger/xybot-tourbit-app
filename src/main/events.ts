@@ -1,5 +1,5 @@
-import { desktopCapturer, ipcMain, screen, BrowserWindow, app } from 'electron'
-import { dataURLtoBlob, hanleEventByRenderer, uploadFile } from './utils'
+import { desktopCapturer, screen, BrowserWindow, app } from 'electron'
+import { hanleEventByRenderer } from './utils'
 
 import { uIOhook } from 'uiohook-napi'
 
@@ -72,10 +72,6 @@ export class EventManager {
       this.contentClickData.push(clickDataWithShot)
     })
 
-    hanleEventByRenderer('ping', async () => {
-      console.log('pong')
-    })
-
     hanleEventByRenderer('winSetSize', async (event) => {
       const { width, height } = event.data
       const { sender } = event
@@ -113,54 +109,19 @@ export class EventManager {
       this.initStartCapture(sourceId, devicePixelRatio)
 
       app.dock?.setBadge('REC')
-      return {
-        success: true
-      }
     })
 
     hanleEventByRenderer('stopCollectClickEvents', async () => {
       uIOhook.stop()
 
       app.dock?.setBadge('')
-      return {
-        success: true,
-        data: this.contentClickData
-      }
+      return this.contentClickData
     })
 
     hanleEventByRenderer('winClose', async (e) => {
       const { sender } = e
       const mainWindow = BrowserWindow.fromId(sender.id)
       mainWindow?.close()
-    })
-
-    ipcMain.on('getCaptureSourcesByWindow', async () => {
-      console.log('getCaptureSourcesByWindow called')
-      const sources = await desktopCapturer.getSources({
-        types: ['screen'],
-        thumbnailSize: { width: 3360, height: 1890 },
-        fetchWindowIcons: true
-      })
-      const displays = screen.getAllDisplays()
-      console.log('getCaptureSourcesByWindow', sources)
-      // 获取屏幕信息
-      console.log('getCaptureSourcesByWindow displays', displays)
-
-      const displayShot = sources[0].thumbnail.toDataURL()
-      console.log('source 1 screenshot', displayShot)
-
-      const blob = dataURLtoBlob(displayShot)
-      const name = `app__clicks.jpg`
-      uploadFile({
-        blob,
-        name,
-        uploadUrl: 'https://console.yingdao.com/gw-api/upload/file'
-      }).then(console.log)
-
-      // console.log('getCaptureSourcesByWindow windows', windows)
-
-      // 发送到渲染进程
-      // return sources
     })
   }
 }

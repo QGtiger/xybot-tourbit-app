@@ -1,5 +1,4 @@
 type ChannelInvokeMap = {
-  ping: void
   winSetSize: {
     width: number
     height: number
@@ -22,24 +21,16 @@ type CaptureSource = {
 }
 
 type ChannelHandlelMap = {
-  ping: void
   winSetSize: void
   queryScreenList: CaptureSource[]
-  startCollectClickEvents: {
-    success: boolean
-  }
-  stopCollectClickEvents: {
-    success: boolean
-    data: ClickDataWithShotType[]
-  }
+  startCollectClickEvents: void
+  stopCollectClickEvents: ClickDataWithShotType[]
   winClose: void
 }
 
 type ChannelName = keyof ChannelInvokeMap
 
 type ChannelInvokeData<T extends ChannelName> = ChannelInvokeMap[T]
-
-type ChannelHandleData<T extends ChannelName> = Promise<ChannelHandlelMap[T]>
 
 interface ContentClickData {
   x: number

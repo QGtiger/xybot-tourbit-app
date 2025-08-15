@@ -62,12 +62,6 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  // ipcMain.on('ping', () => {
-  //   uIOhook.start()
-  //   console.log('pong')
-  // })
-
   // https://chat.deepseek.com/a/chat/s/4ebd9549-078c-4421-b902-53bafe5cc89e
 
   // https://chat.deepseek.com/a/chat/s/2ccc9605-37ac-494c-bc9d-fc2bf69d9be2
