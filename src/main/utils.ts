@@ -63,9 +63,9 @@ export function handleDeepLink(urlString: string, windowIns: BrowserWindow) {
 export async function uploadFile(config: {
   blob: Blob
   name: string
-  uploadUrl: string
+  uploadUrl?: string
 }): Promise<string> {
-  const { uploadUrl } = config
+  const { uploadUrl = 'https://console.yingdao.com/gw-api/upload/file' } = config
   if (!uploadUrl) {
     throw new Error('未配置上传文件的 URL')
   }

@@ -9,8 +9,12 @@ type ChannelInvokeMap = {
     devicePixelRatio: number
   }
   stopCollectClickEvents: void
-
   winClose: void
+
+  compressionAndUploadVideo: {
+    prefixName: string
+    arrayBuffer: ArrayBuffer
+  }
 }
 
 type CaptureSource = {
@@ -26,6 +30,7 @@ type ChannelHandlelMap = {
   startCollectClickEvents: void
   stopCollectClickEvents: ClickDataWithShotType[]
   winClose: void
+  compressionAndUploadVideo: RecordScreenProps
 }
 
 type ChannelName = keyof ChannelInvokeMap

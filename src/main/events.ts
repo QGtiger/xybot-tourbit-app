@@ -3,6 +3,10 @@ import { hanleEventByRenderer } from './utils'
 
 import { uIOhook } from 'uiohook-napi'
 
+import log from 'electron-log/main'
+
+import { createTourbitMaterial } from './ffmpegUtils'
+
 export class EventManager {
   sourceDisplayMap: Map<string, Electron.Display> = new Map()
   desktopCapturerSourceMap: Map<string, Electron.DesktopCapturerSource> = new Map()
@@ -53,21 +57,10 @@ export class EventManager {
         w: width,
         h: height,
         screenshotUrl: '',
-        t: Date.now() - this.startTime
+        t: Date.now() - this.startTime - 50
       }
 
-      const sources = await desktopCapturer.getSources({
-        types: ['screen'],
-        thumbnailSize: { width: displayWidth, height: displayHeight },
-        fetchWindowIcons: true
-      })
-
-      const targetSource = sources.find((source) => source.id === this.captureSourceId)
-      if (!targetSource) return
-
-      const screenshotUrl = targetSource.thumbnail.toDataURL()
-
-      clickDataWithShot.screenshotUrl = screenshotUrl
+      clickDataWithShot.screenshotUrl = ''
 
       this.contentClickData.push(clickDataWithShot)
     })
@@ -122,6 +115,27 @@ export class EventManager {
       const { sender } = e
       const mainWindow = BrowserWindow.fromId(sender.id)
       mainWindow?.close()
+    })
+
+    hanleEventByRenderer('compressionAndUploadVideo', async (e) => {
+      const { prefixName, arrayBuffer } = e.data
+
+      const targetCaptureSource = this.sourceDisplayMap.get(this.captureSourceId || '')
+
+      const res = await createTourbitMaterial({
+        dirName: prefixName,
+        arrayBuffer,
+        recordSchema: {
+          clicks: this.contentClickData,
+          screenRecordingUrl: '',
+          screenRecordWidth: targetCaptureSource?.bounds.width || 0,
+          screenRecordHeight: targetCaptureSource?.bounds.height || 0
+        }
+      })
+
+      log.info('Compression and upload completed:', res)
+
+      return res.recordSchema
     })
   }
 }

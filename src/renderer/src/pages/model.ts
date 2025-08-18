@@ -1,6 +1,6 @@
 import { walkflowRequest } from '@renderer/api/walkflowApi'
 import { createCustomModel } from '@renderer/common/createModel'
-import { dataURLtoBlob, sendToMainByIPC, uploadFile } from '@renderer/utils'
+import { sendToMainByIPC } from '@renderer/utils'
 import { useReactive } from 'ahooks'
 import { App } from 'antd'
 import { useNavigate } from 'react-router-dom'
@@ -79,7 +79,7 @@ export const TourbitAppModel = createCustomModel(() => {
           mandatory: {
             chromeMediaSource: 'desktop',
             chromeMediaSourceId: id,
-            maxFrameRate: 60,
+            maxFrameRate: 30,
             aspectRatio: captureWidth / captureHeight,
             minWidth: captureWidth,
             minHeight: captureHeight,
@@ -88,16 +88,16 @@ export const TourbitAppModel = createCustomModel(() => {
           }
         }
       })
-      .then((stream) => {
+      .then(async (stream) => {
         if (!stream.active) throw new Error('Inactive stream')
-        sendToMainByIPC('startCollectClickEvents', {
+        await sendToMainByIPC('startCollectClickEvents', {
           sourceId: targetCaptureSource?.id || '',
           devicePixelRatio: window.devicePixelRatio
         })
 
         const recorder = (viewModel.mediaRecorder = new MediaRecorder(stream, {
           mimeType,
-          videoBitsPerSecond: 25000000
+          videoBitsPerSecond: 15000000 // 设置视频比特率
         }))
 
         // 事件监听
@@ -130,53 +130,27 @@ export const TourbitAppModel = createCustomModel(() => {
 
     if (mediaRecorder) {
       viewModel.status = 'uploading'
-      const recordSchema: RecordScreenProps = {
-        screenRecordingUrl: '',
-        screenRecordWidth: targetCaptureSource?.display.bounds.width || 0,
-        screenRecordHeight: targetCaptureSource?.display.bounds.height || 0,
-        clicks: []
-      }
 
-      Promise.all([
-        new Promise<any>(async (r, j) => {
-          const { success, data: clickShots } = await sendToMainByIPC('stopCollectClickEvents')
-          if (!success) {
-            j('停止录制失败，请重试。')
-          } else {
-            Promise.all(
-              clickShots.map(async (shot, index) => {
-                const blob = dataURLtoBlob(shot.screenshotUrl)
-                const name = `app__clicks_${shot.t}.jpg`
-                const url = await uploadFile({
-                  blob,
-                  name
-                })
-                recordSchema.clicks[index] = {
-                  ...shot,
-                  screenshotUrl: url
-                }
-              })
-            ).then(r, j)
-          }
-        }),
-        new Promise<void>(async (r) => {
-          mediaRecorder.addEventListener('stop', async () => {
-            const blob = new Blob(recordedChunks, { type: mimeType })
-            const url = await uploadFile({
-              blob,
-              name: `app__record_${Date.now()}.webm`
-            })
-            recordSchema.screenRecordingUrl = url
-            console.log('录制完成，文件已上传', url)
-            r()
+      sendToMainByIPC('stopCollectClickEvents')
+
+      new Promise<RecordScreenProps>(async (r) => {
+        mediaRecorder.addEventListener('stop', async () => {
+          const blob = new Blob(recordedChunks, { type: mimeType })
+
+          const arrayBuffer = await blob.arrayBuffer()
+
+          const { data } = await sendToMainByIPC('compressionAndUploadVideo', {
+            prefixName: `app__record_${Date.now()}`,
+            arrayBuffer
           })
-
-          // 触发ondataavailable， 否则没数据
-          mediaRecorder.stop()
+          r(data)
         })
-      ])
+
+        // 触发ondataavailable， 否则没数据
+        mediaRecorder.stop()
+      })
         .then(
-          () => {
+          (recordSchema) => {
             console.log('录制完成，所有数据已上传', recordSchema)
 
             return walkflowRequest<{
