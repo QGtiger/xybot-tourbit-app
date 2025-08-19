@@ -18,6 +18,10 @@ function createWindow(): void {
     transparent: true,
     resizable: false,
 
+    vibrancy: 'fullscreen-ui', // on MacOS
+    backgroundMaterial: 'acrylic', // on Windows 11
+    visualEffectState: 'active',
+
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

@@ -3,8 +3,11 @@ import { TourbitAppModel } from '../model'
 import { useRafInterval } from 'ahooks'
 import { useState } from 'react'
 import { AuthLoginLayout } from '@renderer/Layouts/AuthLogin'
+import { useWindowSize } from '@renderer/hooks/useWindowSize'
 
 export default function Recording() {
+  useWindowSize(300, 100)
+
   const { handleClose, handleCountDown, handleStopCapture } = TourbitAppModel.useModel()
 
   const [count, setCount] = useState(0)
@@ -19,7 +22,7 @@ export default function Recording() {
 
   return (
     <AuthLoginLayout>
-      <div className="flex pt-2 justify-around text-[#dadad9]">
+      <div className="flex justify-around text-[#dadad9] mt-0.5">
         <div className="flex flex-col gap-0.5 items-center">
           <div
             onClick={handleStopCapture}

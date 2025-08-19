@@ -2,12 +2,15 @@ import { sendToMainByIPC } from '@renderer/utils'
 import { useInterval, useRequest } from 'ahooks'
 import { Button } from 'antd'
 import classNames from 'classnames'
-import { ChevronDown, Command, MonitorPlay, X } from 'lucide-react'
+import { ChevronDown, MonitorPlay, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { TourbitAppModel } from './model'
 import { AuthLoginLayout } from '@renderer/Layouts/AuthLogin'
+import { useWindowSize } from '@renderer/hooks/useWindowSize'
 
 export default function Index() {
+  useWindowSize(300, 400)
+
   const {
     handleSelectCaptueSource,
     handleCountDown,
@@ -133,9 +136,9 @@ export default function Index() {
             loading={isUploading}
           >
             <span>{isUploading ? 'Preparing upload...' : 'Start Recording'}</span>
-            <span className="px-2  py-0.5 text-xs rounded-md bg-[#7d88f0] flex gap-0.5 items-center">
+            {/* <span className="px-2  py-0.5 text-xs rounded-md bg-[#7d88f0] flex gap-0.5 items-center">
               <Command size={10} strokeWidth={3} />E
-            </span>
+            </span> */}
           </Button>
         </div>
         <div className="text-xs text-gray-300 mt-4">Version: 1.0.0</div>
