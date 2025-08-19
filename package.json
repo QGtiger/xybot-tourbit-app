@@ -20,7 +20,8 @@
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
     "build:mac-x64": "electron-vite build && electron-builder --mac --x64",
-    "build:win-x64": "npm run build && electron-builder --win --x64"
+    "build:win-x64": "npm run build && electron-builder --win --x64",
+    "generate-icons": "electron-icon-builder --input=./resources/icon.png --output=build --flatten"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
@@ -58,6 +59,7 @@
     "autoprefixer": "^10.4.16",
     "electron": "^37.2.3",
     "electron-builder": "^25.1.8",
+    "electron-icon-builder": "^2.0.1",
     "electron-vite": "^4.0.0",
     "eslint": "^9.31.0",
     "eslint-plugin-react": "^7.37.5",
