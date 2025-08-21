@@ -1,11 +1,10 @@
-import { desktopCapturer, screen, BrowserWindow, app } from 'electron'
+import { desktopCapturer, screen, BrowserWindow, app, shell } from 'electron'
 import { hanleEventByRenderer } from './utils'
 
 import { uIOhook } from 'uiohook-napi'
 
-import log from 'electron-log/main'
-
 import { createTourbitMaterial } from './ffmpegUtils'
+import log, { logFilePath } from './log'
 
 export class EventManager {
   sourceDisplayMap: Map<string, Electron.Display> = new Map()
@@ -136,6 +135,11 @@ export class EventManager {
       log.info('Compression and upload completed:', res)
 
       return res.recordSchema
+    })
+
+    hanleEventByRenderer('showItemInFolderWithLogs', async () => {
+      console.log(logFilePath)
+      shell.showItemInFolder(logFilePath)
     })
   }
 }

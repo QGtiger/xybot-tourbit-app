@@ -1,5 +1,3 @@
-import log from 'electron-log/main'
-
 import {
   path as ffmpegPath,
   version as ffmpegVersion,
@@ -14,6 +12,7 @@ import os from 'os'
 import { Readable } from 'stream'
 import { uploadFile } from './utils'
 import { retainRecentFolders } from './file'
+import log from './log'
 
 // 替换 asar 为 asar.unpacked 以获取解压目录
 const unpackedFfmpegPath = ffmpegPath.replace('app.asar', 'app.asar.unpacked')
@@ -24,6 +23,12 @@ log.info('Temporary directory for media compression:', tempDir)
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir, { recursive: true })
 }
+
+if (!fs.existsSync(unpackedFfmpegPath)) {
+  log.error('FFmpeg unpacked path does not exist:', unpackedFfmpegPath)
+}
+
+unpackedFfmpegPath && ffmpeg.setFfmpegPath(unpackedFfmpegPath)
 
 log.info('FFmpeg Path:', ffmpegPath, unpackedFfmpegPath)
 log.info('FFmpeg Version:', ffmpegVersion)
@@ -43,9 +48,6 @@ export async function createTourbitMaterial({
   const materialDir = path.join(tempDir, dirName)
   if (!fs.existsSync(materialDir)) {
     fs.mkdirSync(materialDir, { recursive: true })
-    log.info(`Created material directory: ${materialDir}`)
-  } else {
-    log.info(`Material directory already exists: ${materialDir}`)
   }
 
   const materialRecordPath = path.join(materialDir, 'record.webm')
@@ -82,6 +84,9 @@ export async function createTourbitMaterial({
       }
     })
   )
+
+  log.info(`Material processing completed for directory: ${materialDir}`)
+  log.info('Record Schema:', recordSchema)
 
   return {
     materialDir,

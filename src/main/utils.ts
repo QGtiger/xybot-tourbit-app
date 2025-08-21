@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, protocol } from 'electron'
+import log from './log'
 
 export function dataURLtoBlob(dataUrl: string): Blob {
   const arr = dataUrl.split(',')
@@ -95,7 +96,7 @@ export function hanleEventByRenderer<T extends ChannelName>(
   ) => Promise<ChannelHandlelMap[T]>
 ): void {
   ipcMain.handle(channel, (event, arg) => {
-    console.log(`Received IPC event by Invoke: ${channel}`, arg)
+    log.info(`Received IPC event by Invoke: ${channel}`, arg)
     return listener({
       ...event,
       data: arg
@@ -108,7 +109,7 @@ export function hanleEventByRenderer<T extends ChannelName>(
         }
       },
       (err) => {
-        console.error(`Error handling IPC event ${channel}:`, err)
+        log.error(`Error handling IPC event ${channel}:`, err)
         return {
           success: false,
           msg: err instanceof Error ? err.message : String(err)

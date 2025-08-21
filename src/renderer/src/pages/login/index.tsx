@@ -19,7 +19,6 @@ export default function Login() {
 
   useMount(() => {
     window.open('https://tourbit.yingdao.com/auth', '_blank', 'noopener,noreferrer')
-
     window.electron.ipcRenderer.once('deep-link-token', (_, token) => {
       authToken(token)
     })
@@ -30,7 +29,7 @@ export default function Login() {
   }, 5000)
 
   return (
-    <div className="flex justify-center items-center py-6 flex-col gap-4">
+    <div className="flex justify-center items-center py-6 flex-col gap-4 h-full">
       <CircleLoader />
       <span className="text-gray-300">
         {authFailed

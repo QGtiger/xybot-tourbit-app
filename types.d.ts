@@ -15,6 +15,7 @@ type ChannelInvokeMap = {
     prefixName: string
     arrayBuffer: ArrayBuffer
   }
+  showItemInFolderWithLogs: void
 }
 
 type CaptureSource = {
@@ -31,6 +32,7 @@ type ChannelHandlelMap = {
   stopCollectClickEvents: ClickDataWithShotType[]
   winClose: void
   compressionAndUploadVideo: RecordScreenProps
+  showItemInFolderWithLogs: void
 }
 
 type ChannelName = keyof ChannelInvokeMap

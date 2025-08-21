@@ -142,7 +142,14 @@ export default function Index() {
           </Button>
         </div>
         <div className="text-xs text-gray-300 mt-4">Version: 1.0.0</div>
-        <div className="text-xs text-gray-300">Author: Lightfish</div>
+        <div
+          className="text-xs text-gray-300 interactive"
+          onClick={() => {
+            sendToMainByIPC('showItemInFolderWithLogs')
+          }}
+        >
+          Author: Lightfish
+        </div>
       </div>
     </AuthLoginLayout>
   )
