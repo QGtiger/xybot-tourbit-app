@@ -44,7 +44,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build for macOS ${{ matrix.arch }}
+      - name: Build for ${{ matrix.os }} ${{ matrix.arch }}
         run: pnpm run ${{ matrix.build_script }}
         env:
           ELECTRON_ARCH: ${{ matrix.arch }}
@@ -55,7 +55,7 @@ jobs:
           name: ${{ matrix.artifact_name }}-build
           path: |
             dist/**/*.dmg
-            dist/**/*.exe
+            dist/**/xybot-tourbit-app*.exe
 
   release:
     needs: [build]
@@ -78,4 +78,4 @@ jobs:
           draft: true
           files: |
             artifacts/**/*.dmg
-            artifacts/**/*.exe
+            artifacts/**/xybot-tourbit-app*.exe
