@@ -7,10 +7,18 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14 # 使用具体的 macOS 版本
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        arch: [arm64] # 只构建 ARM64 架构
+        include:
+          - os: macos-14
+            artifact_name: mac-arm64
+            arch: arm64
+            build_script: build:mac
+          - os: macos-14
+            artifact_name: mac-intel
+            arch: x64
+            build_script: build:mac-x64
 
     steps:
       - name: Check out Git repository
@@ -26,23 +34,22 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
-          architecture: ${{ matrix.arch }} # 设置架构
+          architecture: ${{ matrix.arch }}
 
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build for macOS ARM64
-        run: pnpm run build:mac
+      - name: Build for macOS ${{ matrix.arch }}
+        run: pnpm run ${{ matrix.build_script }}
         env:
-          ELECTRON_ARCH: ${{ matrix.arch }} # 传递架构给 Electron
+          ELECTRON_ARCH: ${{ matrix.arch }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: macos-arm64-build
+          name: ${{ matrix.artifact_name }}-build
           path: |
-            dist/*.dmg
-          # 只上传需要的文件，而不是整个 dist 目录
+            dist/**/*.dmg
 
   release:
     needs: [build]
@@ -51,14 +58,17 @@ jobs:
       contents: write
 
     steps:
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: macos-arm64-build
-          path: artifacts/
+          path: artifacts
+
+      - name: List downloaded artifacts (for debugging)
+        run: ls -la artifacts/
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          files: artifacts/*.dmg
+          files: |
+            artifacts/**/*.dmg

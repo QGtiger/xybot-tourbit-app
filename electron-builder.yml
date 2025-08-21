@@ -2,6 +2,8 @@ appId: com.tourbit.app
 productName: xybot-tourbit-app
 directories:
   buildResources: build
+  # 动态设置输出目录
+  output: dist/${os}-${arch}
 files:
   - '!**/.vscode/*'
   - '!src/*'
