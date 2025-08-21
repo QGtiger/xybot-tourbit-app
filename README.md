@@ -1,47 +1,22 @@
-# 技术架构
+# QA
 
-feat: 页面基本结构完善，包含消息通信，tailwindcss 安装，文件式路由添加
+## Mac软件打开提示：已损坏，无法打开。您应该将它移到废纸娄 怎么解决?
 
-## IPC 通信
+移步[这里](https://www.xxmac.com/apple-app.html)
 
-* 封装主进程 IPC 通信方案
-  * 支持有好的类型申明
-  * 支持对应channel的 data 类型推导
-  * 支持通用的日志输出
+> 简单说下配置，防止后续 链接失效
 
+* 1.设置中 `隐私与安全`，选择 `任何来源`
+  * 无任务来源，终端 指令运行
+    * `sudo spctl --master-disable`
+* 2.还是提示的话
+  * 终端输入指令 `xattr -cr `. 后面有一个空格，然后在 `应用程序`中 将当前 app 拖拽进去, 再回车
 
+注意：
+1、软件必须是已经安装到应用程序中，或者先拖到桌面上；
 
-# xybot-tourbit-app
+2、cr 后面输入一个空格；
 
-An Electron application with React and TypeScript
+3、然后才能拖入终端中！再回车！不能直接从下载dmg文件中拖！这样无效！
 
-## Recommended IDE Setup
-
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
-
-## Project Setup
-
-### Install
-
-```bash
-$ pnpm install
-```
-
-### Development
-
-```bash
-$ pnpm dev
-```
-
-### Build
-
-```bash
-# For windows
-$ pnpm build:win
-
-# For macOS
-$ pnpm build:mac
-
-# For Linux
-$ pnpm build:linux
-```
+4、Mac Ventura 13 以上系统，需要先前往系统设置–>隐私与安全性–>完整磁盘访问权限 中允许终端！然后才能操作，否则会遇到 Operation not permitted！
