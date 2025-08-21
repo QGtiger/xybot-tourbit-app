@@ -35,18 +35,20 @@ export class EventManager {
       const {
         bounds: { x: displayX, y: displayY, width, height }
       } = captureDisplay
-      const displayWidth = width * this.devicePixelRatio
-      const displayHeight = height * this.devicePixelRatio
 
       const { x, y } = e
 
+      log.info('Mouse down event:', {
+        x,
+        y,
+        displayX,
+        displayY,
+        width,
+        height
+      })
+
       // 如果不是对应 屏幕的点击事件，则忽略
-      if (
-        x < displayX ||
-        x > displayX + displayWidth ||
-        y < displayY ||
-        y > displayY + displayHeight
-      ) {
+      if (x < displayX || x > displayX + width || y < displayY || y > displayY + height) {
         return
       }
 
