@@ -27,13 +27,11 @@ function createWindow(): void {
   }
 
   // 不是 windows 的话，添加一些视觉效果
-  if (process.platform !== 'win32') {
-    Object.assign(config, {
-      vibrancy: 'fullscreen-ui', // on MacOS
-      backgroundMaterial: 'acrylic', // on Windows 11
-      visualEffectState: 'active'
-    })
-  }
+  Object.assign(config, {
+    vibrancy: 'fullscreen-ui', // on MacOS
+    backgroundMaterial: 'acrylic', // on Windows 11
+    visualEffectState: 'active'
+  })
 
   // Create the browser window.
   const mainWindow = new BrowserWindow(config)
