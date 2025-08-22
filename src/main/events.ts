@@ -32,31 +32,51 @@ export class EventManager {
       if (!this.captureSourceId) return
       const captureDisplay = this.sourceDisplayMap.get(this.captureSourceId)
       if (!captureDisplay) return
+      const { x: physicalX, y: physicalY } = e // uIOhook返回的物理像素坐标
+
+      // 找到坐标对应的屏幕
+      // Electron 的 screen 模块返回的 screenWidth 是 逻辑像素（受系统缩放影响
       const {
-        bounds: { x: displayX, y: displayY, width, height }
+        bounds: { x: displayX, y: displayY, width, height },
+        scaleFactor
       } = captureDisplay
 
-      const { x, y } = e
+      let _scaleFactor = scaleFactor
+      if (process.platform === 'darwin') {
+        _scaleFactor = 1 // macOS 上不需要缩放因子
+      }
+
+      // 2. 屏幕的物理宽度（与uIOhook坐标单位一致）
+      const physicalScreenWidth = width * _scaleFactor
+      const physicalScreenHeight = height * _scaleFactor
+      const physicalDisplayX = displayX * _scaleFactor
+      const physicalDisplayY = displayY * _scaleFactor
 
       log.info('Mouse down event:', {
-        x,
-        y,
-        displayX,
-        displayY,
-        width,
-        height
+        _scaleFactor,
+        physicalX,
+        physicalY,
+        physicalDisplayX,
+        physicalDisplayY,
+        physicalScreenWidth,
+        physicalScreenHeight
       })
 
       // 如果不是对应 屏幕的点击事件，则忽略
-      if (x < displayX || x > displayX + width || y < displayY || y > displayY + height) {
+      if (
+        physicalX < physicalDisplayX ||
+        physicalX > physicalDisplayX + physicalScreenWidth ||
+        physicalY < physicalDisplayY ||
+        physicalY > physicalDisplayY + physicalScreenHeight
+      ) {
         return
       }
 
       const clickDataWithShot: ClickDataWithShotType = {
-        x: x - displayX,
-        y: y - displayY,
-        w: width,
-        h: height,
+        x: physicalX - physicalDisplayX,
+        y: physicalY - physicalDisplayY,
+        w: physicalScreenWidth,
+        h: physicalScreenHeight,
         screenshotUrl: '',
         t: Date.now() - this.startTime - 50
       }
