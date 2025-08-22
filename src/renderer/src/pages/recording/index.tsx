@@ -22,7 +22,7 @@ export default function Recording() {
 
   return (
     <AuthLoginLayout>
-      <div className="flex justify-around text-[#dadad9] mt-0.5">
+      <div className="flex justify-around text-[#dadad9] mt-0.5 h-full items-center">
         <div className="flex flex-col gap-0.5 items-center">
           <div
             onClick={handleStopCapture}

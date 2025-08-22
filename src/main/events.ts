@@ -93,6 +93,8 @@ export class EventManager {
       if (mainWindow) {
         mainWindow.setSize(width, height)
         mainWindow.setResizable(false)
+      } else {
+        log.error('Main window not found for resizing:', sender.id)
       }
     })
 
