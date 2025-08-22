@@ -7,8 +7,7 @@ import { EventManager } from './events'
 import { setupDeepLink } from './utils'
 
 function createWindow(): void {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  const config: Electron.BrowserWindowConstructorOptions = {
     width: 300,
     height: 300,
     show: false,
@@ -18,10 +17,6 @@ function createWindow(): void {
     transparent: true,
     resizable: false,
 
-    vibrancy: 'fullscreen-ui', // on MacOS
-    backgroundMaterial: 'acrylic', // on Windows 11
-    visualEffectState: 'active',
-
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -29,7 +24,19 @@ function createWindow(): void {
       // 启用高 DPI 支持
       enablePreferredSizeMode: true
     }
-  })
+  }
+
+  // 不是 windows 的话，添加一些视觉效果
+  if (process.platform !== 'win32') {
+    Object.assign(config, {
+      vibrancy: 'fullscreen-ui', // on MacOS
+      backgroundMaterial: 'acrylic', // on Windows 11
+      visualEffectState: 'active'
+    })
+  }
+
+  // Create the browser window.
+  const mainWindow = new BrowserWindow(config)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
