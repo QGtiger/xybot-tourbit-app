@@ -90,8 +90,9 @@ export class EventManager {
       const { width, height } = event.data
       const { sender } = event
       const mainWindow = BrowserWindow.fromId(sender.id)
+      log.info('Setting window size:', width, height, 'for sender:', sender.id, mainWindow)
       if (mainWindow) {
-        mainWindow.setSize(width, height)
+        mainWindow.setBounds({ width, height })
         mainWindow.setResizable(false)
       } else {
         log.error('Main window not found for resizing:', sender.id)
