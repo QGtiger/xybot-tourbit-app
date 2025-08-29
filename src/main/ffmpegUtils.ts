@@ -116,7 +116,7 @@ export function extractFrameToBlob(
     // 构建ffmpeg命令：提取帧并压缩
     const command = ffmpeg(videoPath)
       .inputOptions([
-        `-ss ${seekTime}` // 精确跳转到指定时间点
+        `-ss ${Math.max(0, parseFloat(seekTime) - 0.2).toFixed(3)}` // 精确跳转到指定时间点
         // '-noaccurate_seek' // 确保精确跳转（禁用快速跳转）
       ])
       .outputOptions([
