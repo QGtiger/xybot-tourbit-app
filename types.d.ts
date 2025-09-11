@@ -1,3 +1,7 @@
+type RecordSettings = {
+  recordWindowVisibility: boolean
+}
+
 type ChannelInvokeMap = {
   winSetSize: {
     width: number
@@ -10,12 +14,25 @@ type ChannelInvokeMap = {
   }
   stopCollectClickEvents: void
   winClose: void
+  winHide: void
 
   compressionAndUploadVideo: {
     prefixName: string
     arrayBuffer: ArrayBuffer
   }
   showItemInFolderWithLogs: void
+  showStartTrayMenu: void
+  showStopTrayMenu: void
+  showRecordTrayMenu: void
+
+  showSettingsWindow: void
+  getStoreData: {
+    key: string
+  }
+  setStoreData: {
+    key: string
+    value: any
+  }
 }
 
 type CaptureSource = {
@@ -31,8 +48,16 @@ type ChannelHandlelMap = {
   startCollectClickEvents: void
   stopCollectClickEvents: ClickDataWithShotType[]
   winClose: void
+  winHide: void
   compressionAndUploadVideo: RecordScreenProps
   showItemInFolderWithLogs: void
+  showStartTrayMenu: void
+  showStopTrayMenu: void
+  showRecordTrayMenu: void
+
+  showSettingsWindow: void
+  getStoreData: any
+  setStoreData: void
 }
 
 type ChannelName = keyof ChannelInvokeMap

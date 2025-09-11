@@ -1,12 +1,16 @@
 import { sendToMainByIPC } from '@renderer/utils'
-import { useInterval, useRequest } from 'ahooks'
+import { useInterval, useMount, useRequest } from 'ahooks'
 import { Button } from 'antd'
 import classNames from 'classnames'
-import { ChevronDown, MonitorPlay, X } from 'lucide-react'
+import { ChevronDown, MonitorPlay, X, EllipsisIcon, Command, ChevronUp } from 'lucide-react'
 import { useEffect } from 'react'
 import { TourbitAppModel } from './model'
 import { AuthLoginLayout } from '@renderer/Layouts/AuthLogin'
 import { useWindowSize } from '@renderer/hooks/useWindowSize'
+
+import packageJson from '../../../../package.json'
+import { handleEventByMain } from '@renderer/utils/message'
+import { isMac } from './os'
 
 export default function Index() {
   useWindowSize(300, 400)
@@ -33,6 +37,16 @@ export default function Index() {
     }
   )
 
+  useMount(() => {
+    sendToMainByIPC('showStartTrayMenu')
+  })
+
+  useEffect(() => {
+    return handleEventByMain('toggleRecord', async () => {
+      handleCountDown()
+    })
+  }, [handleCountDown])
+
   useInterval(() => {
     runAsync()
   }, 2000)
@@ -49,11 +63,17 @@ export default function Index() {
             <div className="flex items-center justify-center ">
               <X
                 onClick={() => {
-                  sendToMainByIPC('winClose')
+                  sendToMainByIPC('winHide')
                 }}
                 className=" app-drag-none text-[10px] bg-[#5e5e60]  p-[5px] rounded-full cursor-pointer"
               />
             </div>
+            <EllipsisIcon
+              onClick={() => {
+                sendToMainByIPC('showSettingsWindow')
+              }}
+              className=" app-drag-none text-[10px] bg-[#5e5e60]  p-[5px] rounded-full cursor-pointer"
+            />
           </div>
 
           <div className="flex mt-1 font-semibold">
@@ -130,18 +150,17 @@ export default function Index() {
             block
             className="mt-2 app-drag-none flex items-center font-semibold py-5"
             onClick={() => {
-              if (isUploading) return
               handleCountDown()
             }}
             loading={isUploading}
           >
             <span>{isUploading ? 'Preparing upload...' : 'Start Recording'}</span>
-            {/* <span className="px-2  py-0.5 text-xs rounded-md bg-[#7d88f0] flex gap-0.5 items-center">
-              <Command size={10} strokeWidth={3} />E
-            </span> */}
+            <span className="px-2  py-0.5 text-xs rounded-md bg-[#7d88f0] flex gap-0.5 items-center">
+              {isMac() ? <Command size={10} strokeWidth={3} /> : <ChevronUp size={10} />}E
+            </span>
           </Button>
         </div>
-        <div className="text-xs text-gray-300 mt-4">Version: 1.0.0</div>
+        <div className="text-xs text-gray-300 mt-4">Version: {packageJson.version}</div>
         <div
           className="text-xs text-gray-300 interactive"
           onClick={() => {

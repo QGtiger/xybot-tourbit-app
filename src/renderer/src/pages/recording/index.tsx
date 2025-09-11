@@ -1,18 +1,31 @@
 import { MonitorStop, RotateCw, X } from 'lucide-react'
 import { TourbitAppModel } from '../model'
 import { useRafInterval } from 'ahooks'
-import { useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AuthLoginLayout } from '@renderer/Layouts/AuthLogin'
 import { useWindowSize } from '@renderer/hooks/useWindowSize'
+import { sendToMainByIPC } from '@renderer/utils'
+import { handleEventByMain } from '@renderer/utils/message'
 
 export default function Recording() {
   useWindowSize(300, 100)
+  const startTime = useRef(Date.now())
 
   const { handleClose, handleCountDown, handleStopCapture } = TourbitAppModel.useModel()
 
+  useLayoutEffect(() => {
+    sendToMainByIPC('showRecordTrayMenu')
+  }, [])
+
+  useEffect(() => {
+    return handleEventByMain('toggleRecord', async () => {
+      handleStopCapture()
+    })
+  }, [handleStopCapture])
+
   const [count, setCount] = useState(0)
   useRafInterval(() => {
-    setCount((prev) => prev + 1)
+    setCount(Math.floor((Date.now() - startTime.current) / 1000))
   }, 1000)
 
   const minutes = Math.floor(count / 60)

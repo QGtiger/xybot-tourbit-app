@@ -1,12 +1,19 @@
-import { desktopCapturer, screen, BrowserWindow, app, shell } from 'electron'
+import { desktopCapturer, screen, BrowserWindow, app, shell, globalShortcut } from 'electron'
 import { hanleEventByRenderer } from './utils'
 
 import { uIOhook } from 'uiohook-napi'
 
 import { createTourbitMaterial } from './ffmpegUtils'
 import log, { logFilePath } from './log'
+import { createSettingWindow } from './windows/setting'
+import { store } from './utils/store'
+import { sendMessageToRenderer } from './utils/message'
 
-export class EventManager {
+export function initEventManager(windowIns: BrowserWindow) {
+  return new EventManager(windowIns)
+}
+
+class EventManager {
   sourceDisplayMap: Map<string, Electron.Display> = new Map()
   desktopCapturerSourceMap: Map<string, Electron.DesktopCapturerSource> = new Map()
   captureSourceId: string | null = null
@@ -15,8 +22,20 @@ export class EventManager {
 
   devicePixelRatio: number = 1
 
-  constructor() {
+  constructor(private readonly windowIns: BrowserWindow) {
     this.initEvents()
+
+    this.initShortCuts()
+  }
+
+  initShortCuts() {
+    globalShortcut.register('CommandOrControl+E', () => {
+      sendMessageToRenderer(this.windowIns, 'toggleRecord')
+    })
+
+    app.on('will-quit', () => {
+      globalShortcut.unregisterAll()
+    })
   }
 
   initStartCapture(sourceId: string, ratio): void {
@@ -90,7 +109,7 @@ export class EventManager {
       const { width, height } = event.data
       const { sender } = event
       const mainWindow = BrowserWindow.fromId(sender.id)
-      log.info('Setting window size:', width, height, 'for sender:', sender.id, mainWindow)
+      log.info('Setting window size:', width, height)
       if (mainWindow) {
         mainWindow.setBounds({ width, height })
         mainWindow.setResizable(false)
@@ -141,6 +160,12 @@ export class EventManager {
       mainWindow?.close()
     })
 
+    hanleEventByRenderer('winHide', async (e) => {
+      const { sender } = e
+      const mainWindow = BrowserWindow.fromId(sender.id)
+      mainWindow?.hide()
+    })
+
     hanleEventByRenderer('compressionAndUploadVideo', async (e) => {
       const { prefixName, arrayBuffer } = e.data
 
@@ -165,6 +190,23 @@ export class EventManager {
     hanleEventByRenderer('showItemInFolderWithLogs', async () => {
       console.log(logFilePath)
       shell.showItemInFolder(logFilePath)
+      shell.showItemInFolder(app.getPath('userData'))
+    })
+
+    hanleEventByRenderer('showSettingsWindow', async (e) => {
+      const { sender } = e
+      createSettingWindow({
+        parentWinId: sender.id
+      })
+    })
+
+    hanleEventByRenderer('getStoreData', async (e) => {
+      return store.get(e.data.key)
+    })
+
+    hanleEventByRenderer('setStoreData', async (e) => {
+      const { key, value } = e.data
+      store.set(key, value)
     })
   }
 }

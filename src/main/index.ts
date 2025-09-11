@@ -3,8 +3,9 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
-import { EventManager } from './events'
 import { setupDeepLink } from './utils'
+import { createTray } from './utils/tray'
+import { initEventManager } from './events'
 
 function createWindow(): void {
   const config: Electron.BrowserWindowConstructorOptions = {
@@ -54,6 +55,15 @@ function createWindow(): void {
   }
 
   setupDeepLink(mainWindow)
+
+  createTray(mainWindow)
+
+  initEventManager(mainWindow)
+
+  // app dock 点击图标，显示窗口
+  app.on('activate', () => {
+    mainWindow.show()
+  })
 }
 
 // This method will be called when Electron has finished
@@ -61,6 +71,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   app.dock?.setIcon(icon)
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.tourbit.app')
 
@@ -76,8 +87,6 @@ app.whenReady().then(() => {
   // https://chat.deepseek.com/a/chat/s/2ccc9605-37ac-494c-bc9d-fc2bf69d9be2
 
   // https://grok.com/chat/c20754e2-fdc8-44f4-8d85-05655a4ee4e3
-
-  new EventManager()
 
   createWindow()
 

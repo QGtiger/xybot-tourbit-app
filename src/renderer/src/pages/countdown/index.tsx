@@ -1,7 +1,10 @@
-import { useInterval, useReactive } from 'ahooks'
+import { useInterval, useMount, useReactive } from 'ahooks'
 import { TourbitAppModel } from '../model'
 import { AuthLoginLayout } from '@renderer/Layouts/AuthLogin'
 import { useWindowSize } from '@renderer/hooks/useWindowSize'
+import { sendToMainByIPC } from '@renderer/utils'
+import { useEffect } from 'react'
+import { handleEventByMain } from '@renderer/utils/message'
 
 export default function Countdown() {
   useWindowSize(300, 235)
@@ -12,6 +15,16 @@ export default function Countdown() {
   const { handleStartCapture, handleClose } = TourbitAppModel.useModel()
 
   const { num } = viewModel
+
+  useMount(() => {
+    sendToMainByIPC('showStopTrayMenu')
+  })
+
+  useEffect(() => {
+    return handleEventByMain('toggleRecord', async () => {
+      handleClose()
+    })
+  }, [handleClose])
 
   useInterval(() => {
     viewModel.num -= 1

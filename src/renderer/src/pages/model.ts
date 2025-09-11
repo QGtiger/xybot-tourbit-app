@@ -32,7 +32,7 @@ export const TourbitAppModel = createCustomModel(() => {
     recordedChunks: [] as Blob[],
 
     source: 'screen' as '' | 'window' | 'screen',
-    status: 'idle' as 'idle' | 'preparing' | 'recording' | 'uploading'
+    status: 'idle' as 'idle' | 'uploading' | 'counting' | 'recording'
   })
 
   const { targetCaptureSource, mediaRecorder, recordedChunks, source, status } = viewModel
@@ -40,31 +40,41 @@ export const TourbitAppModel = createCustomModel(() => {
 
   const handleClose = async () => {
     nav('/')
+    viewModel.status = 'idle'
 
     mediaRecorder?.stop()
     await sendToMainByIPC('stopCollectClickEvents')
   }
 
-  const handleCountDown = async () => {
-    if (!targetCaptureSource) {
+  const handleCountDown = async (opts?: { onStart?: () => void; onError?: () => void }) => {
+    if (!targetCaptureSource || isUploading) {
+      opts?.onError?.()
+      if (isUploading) {
+        message.error('当前有录制任务正在上传，请稍后再试。')
+        return
+      }
       message.error('请先选择一个录制屏幕。')
       // new Notification('请先选择一个录制屏幕。', {
       //   body: '请在列表中选择一个屏幕进行录制。'
       // })
       return
     }
+    opts?.onStart?.()
+
     nav('/countdown')
+    viewModel.status = 'counting'
+
     mediaRecorder?.stop()
     await sendToMainByIPC('stopCollectClickEvents')
   }
 
   const handleStartCapture = async () => {
+    if (!targetCaptureSource) return
+
     nav('/recording')
+    viewModel.status = 'recording'
 
     recordedChunks.length = 0 // 清空之前的录制数据
-    if (!targetCaptureSource) {
-      return
-    }
 
     const { id, display } = targetCaptureSource
 
@@ -196,6 +206,7 @@ export const TourbitAppModel = createCustomModel(() => {
     handlerSwitchSource,
     handleSelectCaptueSource,
     ...viewModel,
-    isUploading
+    isUploading,
+    status
   }
 })
