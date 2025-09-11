@@ -1,6 +1,6 @@
 export function handleEventByMain(channel: string, callback: (data: any) => Promise<any>) {
   const { ipcRenderer } = window.electron
-  ipcRenderer.on(channel, (event, { messageId, data }) => {
+  ipcRenderer.on(channel, (_, { messageId, data }) => {
     const replyKey = `${channel}-${messageId}`
     callback(data).then(
       (result) => {
