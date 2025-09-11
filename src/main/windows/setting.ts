@@ -3,7 +3,7 @@ import icon from '../../../resources/icon.png?asset'
 import { BrowserWindow, shell } from 'electron'
 import { is } from '@electron-toolkit/utils'
 
-export function createSettingWindow(opts: { parentWinId?: number }): void {
+export function createSettingWindow(): void {
   const config: Electron.BrowserWindowConstructorOptions = {
     width: 400,
     height: 300,

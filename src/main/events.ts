@@ -193,11 +193,8 @@ class EventManager {
       shell.showItemInFolder(app.getPath('userData'))
     })
 
-    hanleEventByRenderer('showSettingsWindow', async (e) => {
-      const { sender } = e
-      createSettingWindow({
-        parentWinId: sender.id
-      })
+    hanleEventByRenderer('showSettingsWindow', async () => {
+      createSettingWindow()
     })
 
     hanleEventByRenderer('getStoreData', async (e) => {

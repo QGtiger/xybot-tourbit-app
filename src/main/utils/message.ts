@@ -11,7 +11,7 @@ export function sendMessageToRenderer(
   return new Promise((resolve) => {
     const messageId = Date.now().toString()
     windowIns.webContents.send(channel, { messageId, data })
-    ipcMain.once(`${channel}-${messageId}`, (event, response) => {
+    ipcMain.once(`${channel}-${messageId}`, (_, response) => {
       resolve(response)
     })
   })
