@@ -1,5 +1,6 @@
 import { CircleLoader } from '@renderer/components/CircleLoader'
 import { UserModel } from '@renderer/models/UserModel'
+import { sendToMainByIPC } from '@renderer/utils'
 import { useBoolean, useMount, useTimeout } from 'ahooks'
 import { Button, Input } from 'antd'
 import { useState } from 'react'
@@ -55,6 +56,14 @@ export default function Login() {
           </Button>
         </div>
       )}
+      <div
+        className="text-xs text-gray-300 interactive"
+        onClick={() => {
+          sendToMainByIPC('showItemInFolderWithLogs')
+        }}
+      >
+        Author: Lightfish
+      </div>
     </div>
   )
 }
