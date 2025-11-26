@@ -17,47 +17,76 @@ export function dataURLtoBlob(dataUrl: string): Blob {
 
 export const protocolStr = 'tourbitwebauth'
 
-// 注册自定义协议
-export function setupDeepLink(windowIns: BrowserWindow | null = null) {
-  if (!windowIns) return
-  // 仅在 macOS 和 Linux 上需要
-  if (process.platform !== 'win32') {
-    app.setAsDefaultProtocolClient(protocolStr)
-  }
+// 存储主窗口引用，用于处理 deeplink
+let mainWindowRef: BrowserWindow | null = null
 
-  console.log('设置深层链接协议:', protocolStr)
-  // 处理 macOS 的 open-url 事件
-  app.on('open-url', (event, url) => {
-    event.preventDefault()
-    console.log('Received deep link:', url)
-    handleDeepLink(url, windowIns)
-  })
+// 设置主窗口引用
+export function setMainWindow(windowIns: BrowserWindow | null) {
+  mainWindowRef = windowIns
+}
 
-  // 处理 Windows 的协议调用
+// 获取主窗口引用
+export function getMainWindow(): BrowserWindow | null {
+  return mainWindowRef
+}
+
+// 初始化协议注册（在 app.whenReady() 之后调用）
+export function registerProtocol() {
+  // 所有平台都需要注册协议
+  app.setAsDefaultProtocolClient(protocolStr)
+
+  // 注册自定义协议处理器（Windows 和 Linux）
   protocol.registerStringProtocol(protocolStr, (request) => {
-    handleDeepLink(request.url, windowIns)
+    const url = request.url
+    log.info('Received protocol request:', url)
+    if (mainWindowRef) {
+      handleDeepLink(url, mainWindowRef)
+    } else {
+      log.warn('Main window not available, storing URL for later:', url)
+      // 如果窗口还未创建，可以存储 URL 稍后处理
+    }
   })
+
+  log.info('协议已注册:', protocolStr)
 }
 
 // 处理深层链接
-export function handleDeepLink(urlString: string, windowIns: BrowserWindow) {
-  if (!windowIns) return
+export function handleDeepLink(urlString: string, windowIns: BrowserWindow | null = null) {
+  const targetWindow = windowIns || mainWindowRef
+  if (!targetWindow) {
+    log.warn('无法处理 deeplink，窗口未创建:', urlString)
+    return
+  }
 
   try {
     const parsedUrl = new URL(urlString)
+    log.info('解析 deeplink URL:', {
+      protocol: parsedUrl.protocol,
+      hostname: parsedUrl.hostname,
+      search: parsedUrl.search
+    })
+
     if (parsedUrl.hostname === 'auth') {
       const token = parsedUrl.searchParams.get('token')
       if (token) {
+        log.info('收到 token，发送到渲染进程')
         // 发送 token 到渲染进程
-        windowIns.webContents.send('deep-link-token', token)
+        targetWindow.webContents.send('deep-link-token', token)
 
         // 激活窗口
-        if (windowIns.isMinimized()) windowIns.restore()
-        windowIns.focus()
+        if (targetWindow.isMinimized()) {
+          targetWindow.restore()
+        }
+        targetWindow.focus()
+        targetWindow.show()
+      } else {
+        log.warn('deeplink URL 中缺少 token 参数')
       }
+    } else {
+      log.warn('未知的 deeplink hostname:', parsedUrl.hostname)
     }
   } catch (e) {
-    console.error('处理深层链接时出错:', e)
+    log.error('处理深层链接时出错:', e)
   }
 }
 
