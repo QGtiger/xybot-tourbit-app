@@ -1,5 +1,5 @@
 import axios, { type AxiosRequestConfig, type AxiosRequestHeaders } from 'axios'
-import { setAccessToken } from '.'
+import { setAccessToken } from './common'
 import { navigate } from '../utils/navigation'
 import { createMessage } from '../utils/customMessage'
 

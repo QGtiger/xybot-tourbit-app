@@ -1,4 +1,4 @@
-import { getAccessToken } from '@renderer/api'
+import { getAccessToken } from '@renderer/api/common'
 import { UserModel } from '@renderer/models/UserModel'
 import { useMount } from 'ahooks'
 import { Spin } from 'antd'

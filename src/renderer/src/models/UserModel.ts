@@ -1,9 +1,9 @@
-import { getAccessToken, setAccessToken } from '@renderer/api'
-import { request } from '@renderer/api/request'
+import { getAccessToken, setAccessToken } from '@renderer/api/common'
 import { commonApiConfig } from '@renderer/api/walkflowApi'
 import { createCustomModel } from '@renderer/common/createModel'
 import { useMount, useReactive, useRequest } from 'ahooks'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { decryptUserInfo } from './utils/crypto'
 
 interface UserInfo {
   nickName: string
@@ -39,10 +39,7 @@ export const UserModel = createCustomModel(() => {
           uuid: ''
         })
       } else if (!userViewModel.uuid) {
-        const { data } = await request<UserInfo>({
-          url: '/boss/api/v1/sys/user/detail',
-          method: 'get'
-        })
+        const data = decryptUserInfo(token)
 
         if (data) {
           Object.assign(userViewModel, data)
